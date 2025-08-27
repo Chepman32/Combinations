@@ -13,14 +13,19 @@ import {
 import {
   generateDailySeed,
   generateRandomSeed,
-  generateTileInventory,
   calculateTargetScore,
   validateAttempt,
   calculateScore,
   calculateStars,
-  isValidPrefix,
-  isValidWord,
 } from '../utils';
+import { 
+  WORD_DATABASE, 
+  getRandomWordForDifficulty, 
+  isValidWord, 
+  isValidPrefix, 
+  presetToDifficulty,
+  getWordData
+} from '../data';
 import { GAME_CONSTANTS } from '../constants';
 
 export class GameEngine {
@@ -49,6 +54,118 @@ export class GameEngine {
     this.initializeStats();
   }
 
+  // Generate tiles from word data based on difficulty
+  private generateTilesFromWordData(difficulty: 'easy' | 'medium' | 'hard', rngSeed: string, gridWidth: number, gridHeight: number): ComboTile[] {
+    // Convert string seed to number for deterministic generation
+    const seedNumber = parseInt(rngSeed.slice(-8), 16) || 12345;
+    const wordData = getRandomWordForDifficulty(difficulty, seedNumber);
+    const totalTiles = gridWidth * gridHeight;
+    const tiles: ComboTile[] = [];
+    
+    // For Easy (2x2), we need exactly 4 tiles that form a valid word
+    if (difficulty === 'easy' && gridWidth === 2 && gridHeight === 2) {
+      // Ensure we have exactly the tiles needed for the word
+      wordData.tiles.forEach((tileText, index) => {
+        const row = Math.floor(index / gridWidth);
+        const col = index % gridWidth;
+        tiles.push({
+          id: `tile_${index}`,
+          text: tileText.toUpperCase(),
+          used: 0,
+          maxUses: 1,
+          x: col,
+          y: row,
+        });
+      });
+      
+      // Fill the remaining 2 slots with tiles that don't interfere with the solution
+      const allWordsForDifficulty = WORD_DATABASE[difficulty];
+      const allTilesFromDifficulty = allWordsForDifficulty.flatMap(word => word.tiles);
+      
+      let randomIndex = seedNumber;
+      let addedCount = 0;
+      while (addedCount < 2) {
+        randomIndex = (randomIndex * 16807) % 2147483647;
+        const tileIndex = randomIndex % allTilesFromDifficulty.length;
+        const randomTileText = allTilesFromDifficulty[tileIndex];
+        
+        // Don't duplicate the correct tiles and ensure it doesn't create false solutions
+        if (!wordData.tiles.includes(randomTileText.toLowerCase())) {
+          const row = Math.floor((wordData.tiles.length + addedCount) / gridWidth);
+          const col = (wordData.tiles.length + addedCount) % gridWidth;
+          tiles.push({
+            id: `tile_${wordData.tiles.length + addedCount}`,
+            text: randomTileText.toUpperCase(),
+            used: 0,
+            maxUses: 1,
+            x: col,
+            y: row,
+          });
+          addedCount++;
+        }
+      }
+    } else {
+      // For other difficulties, use the original logic
+      // Add the correct word tiles first
+      wordData.tiles.forEach((tileText, index) => {
+        const row = Math.floor(index / gridWidth);
+        const col = index % gridWidth;
+        tiles.push({
+          id: `tile_${index}`,
+          text: tileText.toUpperCase(),
+          used: 0,
+          maxUses: 1,
+          x: col,
+          y: row,
+        });
+      });
+      
+      // Fill remaining slots with random tiles from the same difficulty level
+      const allWordsForDifficulty = WORD_DATABASE[difficulty];
+      const allTilesFromDifficulty = allWordsForDifficulty.flatMap(word => word.tiles);
+      
+      // Use seeded random to ensure deterministic tile generation
+      let randomIndex = seedNumber;
+      while (tiles.length < totalTiles) {
+        randomIndex = (randomIndex * 16807) % 2147483647; // Linear congruential generator
+        const tileIndex = randomIndex % allTilesFromDifficulty.length;
+        const randomTileText = allTilesFromDifficulty[tileIndex];
+        
+        // Don't duplicate the correct tiles
+        if (!wordData.tiles.includes(randomTileText.toLowerCase())) {
+          const row = Math.floor(tiles.length / gridWidth);
+          const col = tiles.length % gridWidth;
+          tiles.push({
+            id: `tile_${tiles.length}`,
+            text: randomTileText.toUpperCase(),
+            used: 0,
+            maxUses: 1,
+            x: col,
+            y: row,
+          });
+        }
+      }
+    }
+    
+    // Shuffle the tiles using seeded random
+    let randomIndex = seedNumber;
+    for (let i = tiles.length - 1; i > 0; i--) {
+      randomIndex = (randomIndex * 16807) % 2147483647;
+      const j = randomIndex % (i + 1);
+      [tiles[i], tiles[j]] = [tiles[j], tiles[i]];
+    }
+    
+    // Reassign positions after shuffle
+    tiles.forEach((tile, index) => {
+      const row = Math.floor(index / gridWidth);
+      const col = index % gridWidth;
+      tile.x = col;
+      tile.y = row;
+    });
+    
+    return tiles;
+  }
+
   // Initialize or load stats
   private initializeStats(): void {
     // This would load from MMKV in the real implementation
@@ -65,7 +182,8 @@ export class GameEngine {
   public generateDailyPuzzle(): Puzzle {
     const seed = generateDailySeed();
     const gridSize = GAME_CONSTANTS.GRID_PRESETS.classic;
-    const tiles = generateTileInventory(seed, gridSize.width, gridSize.height);
+    const difficulty = presetToDifficulty('classic'); // Daily puzzles use classic difficulty
+    const tiles = this.generateTilesFromWordData(difficulty, seed.rngSeed, gridSize.width, gridSize.height);
     const targetScore = calculateTargetScore(tiles);
 
     this.currentPuzzle = {
@@ -85,7 +203,8 @@ export class GameEngine {
   public generateFreePlayPuzzle(preset: FreePlayPreset): Puzzle {
     const seed = generateRandomSeed();
     const gridSize = GAME_CONSTANTS.GRID_PRESETS[preset];
-    const tiles = generateTileInventory(seed, gridSize.width, gridSize.height);
+    const difficulty = presetToDifficulty(preset);
+    const tiles = this.generateTilesFromWordData(difficulty, seed.rngSeed, gridSize.width, gridSize.height);
     const targetScore = calculateTargetScore(tiles);
 
     this.currentPuzzle = {
@@ -306,42 +425,61 @@ export class GameEngine {
     this.gameState = 'idle';
   }
 
-  // Get hint for current selection
+
+
+  // Get hint for current selection - improved for all difficulties
   public getHint(): { type: 'start' | 'continuation' | 'word'; tileId?: string } | null {
     if (!this.currentPuzzle) return null;
 
+    const availableTiles = this.getAvailableTiles();
+
     if (this.selectedTiles.length === 0) {
-      // Suggest a starting tile that could lead to a valid word
-      const availableTiles = this.getAvailableTiles();
-      if (availableTiles.length > 0) {
-        // Look for tiles that could start common word patterns
-        const commonStarters = ['RE', 'UN', 'IN', 'DIS', 'MIS', 'PRE', 'OVER', 'UNDER'];
-        const bestStarter = availableTiles.find(tile => 
-          commonStarters.includes(tile.text)
-        ) || availableTiles[0];
-        
-        return { type: 'start', tileId: bestStarter.id };
-      }
-    } else if (this.selectedTiles.length < this.defaultRuleset.maxCombos) {
-      // Suggest continuation that could form a valid word
-      const availableTiles = this.getAvailableTiles().filter(t => 
-        !this.selectedTiles.includes(t.id)
-      );
+      // Find a tile that starts a valid word from our database
+      const validStartTile = availableTiles.find(tile => {
+        // Check if this tile could start any valid words
+        return Object.values(WORD_DATABASE).flat().some(wordData => {
+          return wordData.tiles[0].toUpperCase() === tile.text;
+        });
+      });
       
-      if (availableTiles.length > 0) {
-        // Look for tiles that could complete the current word meaningfully
-        const currentWord = this.currentWord;
-        const commonEndings = ['ING', 'ED', 'ER', 'EST', 'LY', 'NESS', 'TION', 'ABLE'];
-        
-        // Try to find a tile that could complete a common word pattern
-        const bestContinuation = availableTiles.find(tile => {
-          const potentialWord = currentWord + tile.text;
-          // Check if this could form a common word ending
-          return commonEndings.some(ending => potentialWord.endsWith(ending));
-        }) || availableTiles[0];
-        
-        return { type: 'continuation', tileId: bestContinuation.id };
+      if (validStartTile) {
+        return { type: 'start', tileId: validStartTile.id };
       }
+      
+      // Fallback to first available tile
+      return availableTiles.length > 0 ? { type: 'start', tileId: availableTiles[0].id } : null;
+      
+    } else if (this.selectedTiles.length < this.defaultRuleset.maxCombos) {
+      // Find the next tile that could continue building a valid word
+      const currentTileTexts = this.selectedTiles.map(id => {
+        const tile = this.currentPuzzle!.tiles.find(t => t.id === id);
+        return tile ? tile.text : '';
+      });
+      
+      // Look for words that match our current tile sequence
+      const possibleWords = Object.values(WORD_DATABASE).flat().filter(wordData => {
+        // Check if the current tiles match the beginning of this word
+        if (wordData.tiles.length <= currentTileTexts.length) return false;
+        
+        return currentTileTexts.every((tileText, index) => {
+          return wordData.tiles[index].toUpperCase() === tileText;
+        });
+      });
+      
+      if (possibleWords.length > 0) {
+        // Get the next tile needed for the first possible word
+        const nextTileText = possibleWords[0].tiles[currentTileTexts.length].toUpperCase();
+        const nextTile = availableTiles.find(tile => 
+          tile.text === nextTileText && !this.selectedTiles.includes(tile.id)
+        );
+        
+        if (nextTile) {
+          return { type: 'continuation', tileId: nextTile.id };
+        }
+      }
+      
+      // If no valid continuation, don't suggest anything
+      return null;
     }
 
     return null;

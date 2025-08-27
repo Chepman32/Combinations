@@ -40,7 +40,7 @@ export const TileGrid: React.FC<TileGridProps> = ({
   } else if (gridHeight <= 4) {
     maxTileHeight = 60; // Medium (4x4) - keep current size
   } else {
-    maxTileHeight = 45; // Hard (6x6) - keep current size
+    maxTileHeight = 35; // Hard (6x6) - reduced to prevent vertical overlap
   }
   
   // Use width-based size but cap height to prevent overlap

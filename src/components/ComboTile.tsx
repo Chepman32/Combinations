@@ -88,12 +88,7 @@ export const ComboTile: React.FC<ComboTileProps> = ({
     return [styles.text, { color: colors.text }];
   };
 
-  const getBadgeStyle = () => {
-    if (isExhausted) {
-      return [styles.badge, { backgroundColor: colors.textSecondary }];
-    }
-    return [styles.badge, { backgroundColor: colors.primary }];
-  };
+
 
   const finalTileSize = propTileSize || defaultTileSize;
   
@@ -108,12 +103,6 @@ export const ComboTile: React.FC<ComboTileProps> = ({
       <Text style={[getTextStyle(), { fontSize: Math.min(finalTileSize * 0.3, 22) }]} numberOfLines={1} adjustsFontSizeToFit>
         {tile.text}
       </Text>
-      
-      <View style={getBadgeStyle()}>
-        <Text style={styles.badgeText}>
-          {tile.maxUses - tile.used}
-        </Text>
-      </View>
 
       {isExhausted && (
         <View style={[styles.hatch, { borderColor: colors.textSecondary }]} />
@@ -145,22 +134,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: '700',
   },
-  badge: {
-    position: 'absolute',
-    top: SPACING.xs,
-    right: SPACING.xs,
-    minWidth: 20,
-    height: 20,
-    borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.xs,
-  },
-  badgeText: {
-    ...TYPOGRAPHY.caption,
-    color: 'white',
-    fontWeight: '600',
-  },
+
   hatch: {
     position: 'absolute',
     top: 0,

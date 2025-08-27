@@ -162,44 +162,47 @@ export const GameScreen: React.FC = () => {
         <Text style={[styles.starText, { color: colors.text }]}>
           {'★'.repeat(currentSession.stars)}{'☆'.repeat(5 - currentSession.stars)}
         </Text>
-        {/* Debug info */}
-        <Text style={[styles.debugText, { color: colors.textSecondary }]}>
-          Puzzle ID: {currentPuzzle?.id} | Mode: {currentPuzzle?.id?.startsWith('freeplay_') ? 'Free Play' : 'Daily'}
-        </Text>
+                 {/* Debug info */}
+         <Text style={[styles.debugText, { color: colors.textSecondary }]}>
+           Puzzle ID: {currentPuzzle?.id} | Mode: {currentPuzzle?.id?.startsWith('freeplay_') ? 'Free Play' : 'Daily'}
+         </Text>
+         <Text style={[styles.debugText, { color: colors.textSecondary }]}>
+           Target Word: {currentPuzzle?.tiles.slice(0, 2).map(t => t.text).join('')} (Easy) | {currentPuzzle?.tiles.slice(0, 3).map(t => t.text).join('')} (Medium) | {currentPuzzle?.tiles.slice(0, 4).map(t => t.text).join('')} (Hard)
+         </Text>
         
-        {/* Difficulty switcher - always show for now */}
-        <View style={styles.difficultyRow}>
-          {(
-            [
-              { key: 'small', label: 'Easy (2×2)' },
-              { key: 'classic', label: 'Medium (4×4)' },
-              { key: 'big', label: 'Hard (6×6)' },
-            ] as const
-          ).map(opt => (
-            <TouchableOpacity
-              key={opt.key}
-              onPress={() => setFreePlayDifficulty(opt.key)}
-              style={[
-                styles.diffButton,
-                {
-                  backgroundColor:
-                    freePlayPreset === opt.key ? colors.primary : colors.surface2,
-                  borderColor: colors.border,
-                },
-              ]}
-            >
-              <Text
-                style={[
-                  styles.diffButtonText,
-                  { color: freePlayPreset === opt.key ? colors.surface0 : colors.text },
-                ]}
-              >
-                {opt.label}
-                {freePlayPreset === opt.key ? ' ✓' : ''}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+                 {/* Difficulty switcher - always show for now */}
+         <View style={[styles.difficultyRow, { marginBottom: SPACING.md }]}>
+           {(
+             [
+               { key: 'small', label: 'Easy (2×2)' },
+               { key: 'classic', label: 'Medium (4×4)' },
+               { key: 'big', label: 'Hard (6×6)' },
+             ] as const
+           ).map(opt => (
+             <TouchableOpacity
+               key={opt.key}
+               onPress={() => setFreePlayDifficulty(opt.key)}
+               style={[
+                 styles.diffButton,
+                 {
+                   backgroundColor:
+                     freePlayPreset === opt.key ? colors.primary : colors.surface2,
+                   borderColor: colors.border,
+                 },
+               ]}
+             >
+                                <Text
+                   style={[
+                     styles.diffButtonText,
+                     { color: freePlayPreset === opt.key ? colors.surface0 : colors.text },
+                   ]}
+                 >
+                 {opt.label}
+                 {freePlayPreset === opt.key ? ' ✓' : ''}
+               </Text>
+             </TouchableOpacity>
+           ))}
+         </View>
       </View>
 
       {/* Game Area */}
@@ -310,7 +313,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: SPACING.sm,
     paddingTop: SPACING.sm, // Keep top padding small
-    paddingBottom: SPACING.lg, // Increase bottom padding to separate from tiles
+    paddingBottom: SPACING.xxl, // Further increased bottom padding to separate from tiles
     ...SHADOWS.sm,
   },
   difficultyRow: {
@@ -342,8 +345,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: SPACING.md,
-    marginTop: SPACING.lg, // Prevent overlap with difficulty selector
-    marginBottom: SPACING.lg, // Increase bottom margin to prevent cropping
+    marginTop: SPACING.xxl, // Further increased top margin to prevent overlap with difficulty selector
+    marginBottom: SPACING.xl, // Increased bottom margin to prevent cropping
   },
   assemblyContainer: {
     paddingHorizontal: SPACING.md,
