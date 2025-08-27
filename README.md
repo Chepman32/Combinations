@@ -1,97 +1,178 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# Combinations - Offline Word Puzzle Game
 
-# Getting Started
+A React Native word game where players chain 2-4 combination tiles to form valid English words, achieving a 5-star rating by reaching the target score.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## 🎯 Game Overview
 
-## Step 1: Start Metro
+**Goal**: Achieve a 5-star rating by reaching or exceeding the target score for the current puzzle.
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+**Mechanic**: Build valid English words by chaining 2–4 distinct combination tiles, where each tile can be used only once per word. Score = 1 point per letter.
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+**Modes**: 
+- **Daily**: Date-seeded puzzles that reset at midnight (deterministic offline)
+- **Free Play**: Infinite seeded puzzles with adjustable grid presets (Small/Classic/Big)
 
-```sh
-# Using npm
-npm start
+## 🏗️ Architecture
 
-# OR using Yarn
-yarn start
-```
+### Core Components
+- **GameEngine**: Handles puzzle generation, validation, and game state
+- **ThemeContext**: Manages app-wide theme and color schemes
+- **GameContext**: Manages game state and navigation
+- **Navigation**: Simple screen management system
 
-## Step 2: Build and run your app
+### Game Logic
+- **Tile Generation**: Deterministic n-gram sampling based on seed
+- **Validation**: Rule-based word validation (length, tile usage, etc.)
+- **Scoring**: 1 point per letter with star rating system
+- **Offline First**: No network required for gameplay
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+### UI Components
+- **ComboTile**: Individual tile with states (idle/selected/hinted/exhausted)
+- **TileGrid**: Responsive grid layout for tiles
+- **AssemblyBar**: Shows selected tiles and current word being formed
+- **GameScreen**: Main game interface
+- **HomeScreen**: Main menu with game options
 
-### Android
+## 🎨 Design System
 
-```sh
-# Using npm
-npm run android
+### Themes
+- **Light**: Clean, high-contrast design
+- **Dark**: Easy on the eyes for low-light environments
+- **Solar**: Warm, energetic color palette
+- **Mono**: Minimalist grayscale design
 
-# OR using Yarn
-yarn android
-```
+### Typography
+- SF Pro Rounded for headings (700 weight)
+- SF Pro Text for body content (400-600 weights)
+- Dynamic type scaling support
 
-### iOS
+### Motion
+- 60 FPS interactions with Reanimated 3
+- Entrance animations with staggered timing
+- Touch feedback with spring animations
+- Reduce Motion support for accessibility
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
+## 🚀 Getting Started
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+### Prerequisites
+- Node.js >= 18
+- React Native 0.81.0
+- iOS Simulator or Android Emulator
 
-```sh
-bundle install
-```
+### Installation
+```bash
+# Install dependencies
+npm install
 
-Then, and every time you update your native dependencies, run:
-
-```sh
-bundle exec pod install
-```
-
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
-
-```sh
-# Using npm
+# iOS
+cd ios && pod install && cd ..
 npm run ios
 
-# OR using Yarn
-yarn ios
+# Android
+npm run android
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+### Project Structure
+```
+src/
+├── components/          # Reusable UI components
+├── screens/            # Main app screens
+├── core/               # Game engine and context
+├── types/              # TypeScript type definitions
+├── utils/              # Helper functions
+├── constants/          # App constants and configuration
+└── assets/             # Images, fonts, etc.
+```
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+## 🎮 How to Play
 
-## Step 3: Modify your app
+1. **Select Tiles**: Tap tiles to select them (2-4 tiles per word)
+2. **Form Words**: Selected tiles combine to show the word being formed
+3. **Submit**: Tap Submit when you have a valid word
+4. **Score**: Earn points and stars based on word length and target achievement
+5. **Strategy**: Use hints and shuffle to find optimal word combinations
 
-Now that you have successfully run the app, let's make changes!
+### Rules
+- Each tile can only be used once per word
+- Words must be at least 4 letters long
+- Score = 1 point per letter
+- Reach target score for 5 stars
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+## 🔧 Technical Features
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+### Performance
+- Cold start < 2.0s on iPhone 12+
+- Touch feedback latency < 16ms
+- 60 FPS animations
+- Memory budget: ≤ 250 MB
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+### Accessibility
+- VoiceOver support with descriptive labels
+- Dynamic Type scaling
+- High contrast themes
+- Reduce Motion support
 
-## Congratulations! :tada:
+### Offline Capabilities
+- Fully offline gameplay
+- Deterministic puzzle generation
+- Local save/load via MMKV
+- No network dependencies
 
-You've successfully run and modified your React Native App. :partying_face:
+## 📱 Platform Support
 
-### Now what?
+- **iOS**: iPhone and iPad (adaptive layout in v1.1)
+- **Android**: Full support
+- **Minimum**: iOS 12.4+, Android 6.0+
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
+## 🎯 Roadmap
 
-# Troubleshooting
+### v1.0 (MVP)
+- ✅ Core game mechanics
+- ✅ Daily and Free Play modes
+- ✅ Theme system
+- ✅ Basic animations
+- ✅ Offline gameplay
 
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+### v1.1
+- iPad layout enhancements
+- Additional themes
+- Optional telemetry opt-in
 
-# Learn More
+### Future
+- Cloud sync
+- Social features
+- Multi-language support
+- Advanced analytics
 
-To learn more about React Native, take a look at the following resources:
+## 🧪 Testing
 
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+```bash
+# Run tests
+npm test
+
+# Run linting
+npm run lint
+
+# Type checking
+npx tsc --noEmit
+```
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## 📞 Support
+
+For questions or support, please open an issue on GitHub.
+
+---
+
+**Combinations** - Where words come together, offline and free.
