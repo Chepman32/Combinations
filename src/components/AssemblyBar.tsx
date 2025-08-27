@@ -36,7 +36,7 @@ export const AssemblyBar: React.FC<AssemblyBarProps> = ({
   const getWordColor = () => {
     if (currentWord.length === 0) return colors.textSecondary;
     if (isValidWord) return colors.success;
-    if (isValidPrefix) return colors.warning;
+    if (isValidPrefix) return colors.primary;
     return colors.error;
   };
 

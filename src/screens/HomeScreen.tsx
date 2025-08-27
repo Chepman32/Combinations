@@ -4,10 +4,10 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   StatusBar,
   ScrollView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../core/ThemeContext';
 import { useGame } from '../core/GameContext';
 import { FreePlayPreset } from '../types';
@@ -136,7 +136,7 @@ export const HomeScreen: React.FC = () => {
   const renderStatsStrip = () => (
     <View style={[styles.statsStrip, { backgroundColor: colors.surface1 }]}>
       <View style={styles.statItem}>
-        <Text style={[styles.statIcon, { color: colors.warning }]}>🔥</Text>
+        <Text style={[styles.statIcon, { color: colors.primary }]}>🔥</Text>
         <Text style={[styles.statValue, { color: colors.text }]}>0</Text>
         <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Streak</Text>
       </View>

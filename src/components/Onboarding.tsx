@@ -4,11 +4,11 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   StatusBar,
   Dimensions,
   ScrollView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../core/ThemeContext';
 import { SPACING, BORDER_RADIUS, SHADOWS, TYPOGRAPHY } from '../constants';
 

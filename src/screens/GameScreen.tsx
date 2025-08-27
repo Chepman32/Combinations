@@ -4,11 +4,11 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   StatusBar,
   Modal,
   Pressable,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../core/ThemeContext';
 import { useGame } from '../core/GameContext';
 import { TileGrid } from '../components/TileGrid';
@@ -212,7 +212,7 @@ export const GameScreen: React.FC = () => {
       {/* Toolbelt */}
       <View style={[styles.toolbelt, { backgroundColor: colors.surface1 }]}>
         <TouchableOpacity
-          style={[styles.toolButton, { backgroundColor: colors.warning }]}
+          style={[styles.toolButton, { backgroundColor: colors.primaryVariant }]}
           onPress={handleHint}
         >
           <Text style={[styles.toolButtonText, { color: colors.surface0 }]}>

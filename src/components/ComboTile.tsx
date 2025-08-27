@@ -40,7 +40,7 @@ export const ComboTile: React.FC<ComboTileProps> = ({
       return [
         styles.tile,
         {
-          backgroundColor: colors.surface2,
+          backgroundColor: colors.surface0,
           opacity: 0.6,
           borderColor: colors.border,
         },
@@ -52,7 +52,7 @@ export const ComboTile: React.FC<ComboTileProps> = ({
       return [
         styles.tile,
         {
-          backgroundColor: colors.surface1,
+          backgroundColor: colors.surface0,
           borderColor: colors.primary,
           borderWidth: 2,
         },
@@ -64,8 +64,8 @@ export const ComboTile: React.FC<ComboTileProps> = ({
       return [
         styles.tile,
         {
-          backgroundColor: colors.surface1,
-          borderColor: colors.warning,
+          backgroundColor: colors.surface0,
+          borderColor: colors.primary,
           borderWidth: 2,
         },
         styles.hinted,
@@ -75,7 +75,7 @@ export const ComboTile: React.FC<ComboTileProps> = ({
     return [
       styles.tile,
       {
-        backgroundColor: colors.surface1,
+        backgroundColor: colors.surface0,
         borderColor: colors.border,
       },
     ];
