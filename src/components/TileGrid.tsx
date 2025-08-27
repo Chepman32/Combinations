@@ -33,14 +33,14 @@ export const TileGrid: React.FC<TileGridProps> = ({
   // Calculate tile size to use full width
   const tileWidthSize = availableWidthForTiles / gridWidth;
   
-  // Set height limits based on grid size to prevent overlap
+  // Set height limits based on grid size to prevent overlap and cropping
   let maxTileHeight: number;
   if (gridHeight <= 2) {
-    maxTileHeight = 160; // Easy (2x2) - can be larger
+    maxTileHeight = 140; // Easy (2x2) - reduced from 180 to prevent vertical overlap
   } else if (gridHeight <= 4) {
-    maxTileHeight = 80; // Medium (4x4) - medium size
+    maxTileHeight = 60; // Medium (4x4) - keep current size
   } else {
-    maxTileHeight = 55; // Hard (6x6) - smaller to fit
+    maxTileHeight = 45; // Hard (6x6) - keep current size
   }
   
   // Use width-based size but cap height to prevent overlap
@@ -89,6 +89,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 1,
+    maxHeight: 400, // Prevent grid from taking too much vertical space
   },
   row: {
     flexDirection: 'row',

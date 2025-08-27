@@ -309,8 +309,8 @@ const styles = StyleSheet.create({
   starMeter: {
     alignItems: 'center',
     paddingVertical: SPACING.sm,
-    paddingTop: SPACING.sm, // Reduce top padding to save space
-    paddingBottom: SPACING.sm, // Reduce bottom padding to save space
+    paddingTop: SPACING.sm, // Keep top padding small
+    paddingBottom: SPACING.lg, // Increase bottom padding to separate from tiles
     ...SHADOWS.sm,
   },
   difficultyRow: {
@@ -342,8 +342,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: SPACING.md,
-    marginTop: SPACING.sm, // Reduce top margin to give more space for tiles
-    marginBottom: SPACING.sm, // Reduce bottom margin to give more space for tiles
+    marginTop: SPACING.lg, // Prevent overlap with difficulty selector
+    marginBottom: SPACING.lg, // Increase bottom margin to prevent cropping
   },
   assemblyContainer: {
     paddingHorizontal: SPACING.md,
