@@ -342,6 +342,8 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.sm,
     paddingTop: SPACING.sm, // Keep top padding small
     paddingBottom: SPACING.xxl, // Further increased bottom padding to separate from tiles
+    position: 'relative',
+    zIndex: 2,
     ...SHADOWS.sm,
   },
   difficultyRow: {
@@ -382,6 +384,8 @@ const styles = StyleSheet.create({
     padding: SPACING.md,
     marginTop: SPACING.xxl, // Further increased top margin to prevent overlap with difficulty selector
     marginBottom: SPACING.xl, // Increased bottom margin to prevent cropping
+    position: 'relative',
+    zIndex: 1,
   },
   assemblyContainer: {
     paddingHorizontal: SPACING.md,
