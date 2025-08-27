@@ -38,14 +38,15 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
   const [gameMode, setGameMode] = useState<GameMode>('daily');
   const [freePlayPreset, setFreePlayPreset] = useState<FreePlayPreset>('classic');
   const [isGameActive, setIsGameActive] = useState(false);
+  const [currentPuzzle, setCurrentPuzzle] = useState<Puzzle | null>(null);
+  const [currentSession, setCurrentSession] = useState<Session | null>(null);
   const { navigateTo } = useNavigation();
-
-  const currentPuzzle = gameEngine.getCurrentPuzzle();
-  const currentSession = gameEngine.getCurrentSession();
 
   const startDailyGame = () => {
     const puzzle = gameEngine.generateDailyPuzzle();
     const session = gameEngine.startSession(puzzle.id);
+    setCurrentPuzzle(puzzle);
+    setCurrentSession(session);
     setGameMode('daily');
     setIsGameActive(true);
     navigateTo('game');
@@ -54,6 +55,8 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
   const startFreePlayGame = (preset: FreePlayPreset) => {
     const puzzle = gameEngine.generateFreePlayPuzzle(preset);
     const session = gameEngine.startSession(puzzle.id);
+    setCurrentPuzzle(puzzle);
+    setCurrentSession(session);
     setGameMode('freeplay');
     setFreePlayPreset(preset);
     setIsGameActive(true);
@@ -62,12 +65,16 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
 
   // Regenerate a free play puzzle with a new difficulty (grid size)
   const setFreePlayDifficulty = (preset: FreePlayPreset) => {
+    console.log('setFreePlayDifficulty called with:', preset);
     const puzzle = gameEngine.generateFreePlayPuzzle(preset);
     const session = gameEngine.startSession(puzzle.id);
+    setCurrentPuzzle(puzzle);
+    setCurrentSession(session);
     setGameMode('freeplay');
     setFreePlayPreset(preset);
     setIsGameActive(true);
-    navigateTo('game');
+    console.log('New puzzle generated:', puzzle.id, 'Grid:', puzzle.gridWidth, 'x', puzzle.gridHeight);
+    // Don't navigate since we're already on the game screen
   };
 
   const pauseGame = () => {
@@ -83,12 +90,16 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
 
   const resetGame = () => {
     gameEngine.resetGame();
+    setCurrentPuzzle(null);
+    setCurrentSession(null);
     setIsGameActive(false);
     navigateTo('home');
   };
 
   const endGame = () => {
     gameEngine.resetGame();
+    setCurrentPuzzle(null);
+    setCurrentSession(null);
     setIsGameActive(false);
     navigateTo('home');
   };

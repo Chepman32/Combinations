@@ -18,8 +18,8 @@ console.log('');
 
 console.log('🎲 Game Concept: Free Play Puzzle Generation');
 console.log('Three grid presets available:');
-console.log('- Small: 5×5 grid (25 tiles)');
-console.log('- Classic: 6×5 grid (30 tiles)');
+console.log('- Small: 2×2 grid (4 tiles)');
+console.log('- Classic: 3×3 grid (9 tiles)');
 console.log('- Big: 6×6 grid (36 tiles)');
 console.log('');
 

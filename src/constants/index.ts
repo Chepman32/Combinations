@@ -9,7 +9,7 @@ export const GAME_CONSTANTS = {
   SOLVABILITY_THRESHOLD: 70,
   GRID_PRESETS: {
     small: { width: 2, height: 2 },
-    classic: { width: 4, height: 4 },
+    classic: { width: 3, height: 3 },
     big: { width: 6, height: 6 },
   },
 } as const;

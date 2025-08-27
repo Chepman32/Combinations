@@ -69,17 +69,6 @@ export const AssemblyBar: React.FC<AssemblyBarProps> = ({
       >
         {selectedTiles.map((tile, index) => renderSelectedTile(tile, index))}
       </ScrollView>
-
-      {/* Current Word Display */}
-      <View style={[styles.wordContainer, { borderColor: colors.border }]}>
-        <Text style={[styles.wordText, { color: getWordColor() }]}>
-          {currentWord || 'Select tiles to form a word...'}
-        </Text>
-        {currentWord.length > 0 && (
-          <View style={[styles.caret, { backgroundColor: getWordColor() }]} />
-        )}
-      </View>
-
       {/* Action Buttons */}
       <View style={styles.actionsContainer}>
         <TouchableOpacity

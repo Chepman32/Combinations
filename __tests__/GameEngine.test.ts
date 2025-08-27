@@ -16,7 +16,7 @@ describe('GameEngine', () => {
       expect(puzzle.id).toMatch(/^daily_\d{4}-\d{2}-\d{2}$/);
       expect(puzzle.seed.dateISO).toBeDefined();
       expect(puzzle.seed.rngSeed).toBeDefined();
-      expect(puzzle.tiles).toHaveLength(16); // 4x4 grid (classic)
+      expect(puzzle.tiles).toHaveLength(9); // 3x3 grid (classic)
       expect(puzzle.targetScore).toBeGreaterThan(0);
       expect(puzzle.ruleset.minCombos).toBe(2);
       expect(puzzle.ruleset.maxCombos).toBe(4);
@@ -28,7 +28,7 @@ describe('GameEngine', () => {
       const bigPuzzle = gameEngine.generateFreePlayPuzzle('big');
       
       expect(smallPuzzle.tiles).toHaveLength(4); // 2x2
-      expect(classicPuzzle.tiles).toHaveLength(16); // 4x4
+      expect(classicPuzzle.tiles).toHaveLength(9); // 3x3
       expect(bigPuzzle.tiles).toHaveLength(36); // 6x6
     });
   });

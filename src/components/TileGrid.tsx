@@ -14,7 +14,7 @@ interface TileGridProps {
   gridHeight: number;
 }
 
-const { width: screenWidth } = Dimensions.get('window');
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 export const TileGrid: React.FC<TileGridProps> = ({
   tiles,
@@ -25,27 +25,33 @@ export const TileGrid: React.FC<TileGridProps> = ({
   gridWidth,
   gridHeight,
 }) => {
-  // Force full width with different height limits per difficulty
+  // Calculate optimal tile size to fill the entire game area
   const gameAreaWidth = screenWidth - (SPACING.md * 2); // Full width minus padding
-  const totalGapWidth = SPACING.sm * (gridWidth - 1); // Total width of gaps between tiles
-  const availableWidthForTiles = gameAreaWidth - totalGapWidth; // Width available for tiles only
+  const gameAreaHeight = screenHeight * 0.6; // Use 60% of screen height for tiles
   
-  // Calculate tile size to use full width
+  // Calculate spacing between tiles (smaller for better space utilization)
+  const tileGap = SPACING.xs; // Reduced gap for more tile space
+  const totalGapWidth = tileGap * (gridWidth - 1);
+  const totalGapHeight = tileGap * (gridHeight - 1);
+  
+  // Calculate available space for tiles
+  const availableWidthForTiles = gameAreaWidth - totalGapWidth;
+  const availableHeightForTiles = gameAreaHeight - totalGapHeight;
+  
+  // Calculate tile size to fit both width and height constraints
   const tileWidthSize = availableWidthForTiles / gridWidth;
+  const tileHeightSize = availableHeightForTiles / gridHeight;
   
-  // Set height limits based on grid size to prevent overlap and cropping
-  let maxTileHeight: number;
-  if (gridHeight <= 2) {
-    maxTileHeight = 140; // Easy (2x2) - reduced from 180 to prevent vertical overlap
-  } else if (gridHeight <= 4) {
-    maxTileHeight = 60; // Medium (4x4) - keep current size
-  } else {
-    maxTileHeight = 35; // Hard (6x6) - reduced to prevent vertical overlap
-  }
+  // Use the smaller dimension to ensure tiles fit in both directions
+  const optimalTileSize = Math.min(tileWidthSize, tileHeightSize);
   
-  // Use width-based size but cap height to prevent overlap
-  const finalTileSize = Math.min(tileWidthSize, maxTileHeight);
-  const gridGap = SPACING.sm;
+  // Set minimum and maximum tile sizes for good usability
+  const minTileSize = 50;
+  const maxTileSize = 120;
+  
+  // Final tile size with constraints
+  const finalTileSize = Math.max(minTileSize, Math.min(maxTileSize, optimalTileSize));
+  const gridGap = tileGap;
 
   const renderTile = (tile: ComboTileType) => {
     const isSelected = selectedTiles.includes(tile.id);
@@ -70,14 +76,21 @@ export const TileGrid: React.FC<TileGridProps> = ({
     const rowTiles = tiles.filter(tile => tile.y === rowIndex);
     
     return (
-      <View key={`row_${rowIndex}`} style={styles.row}>
+      <View key={`row_${rowIndex}`} style={[styles.row, { gap: gridGap }]}>
         {rowTiles.map(tile => renderTile(tile))}
       </View>
     );
   };
 
     return (
-    <View style={[styles.container, { gap: gridGap }]}>
+    <View style={[
+      styles.container,
+      {
+        width: gameAreaWidth,
+        height: gameAreaHeight,
+        gap: gridGap,
+      }
+    ]}>
       {Array.from({ length: gridHeight }, (_, index) => renderRow(index))}
     </View>
   );
@@ -85,14 +98,11 @@ export const TileGrid: React.FC<TileGridProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-    flexShrink: 1,
-    maxHeight: 400, // Prevent grid from taking too much vertical space
+    alignSelf: 'center',
   },
   row: {
     flexDirection: 'row',
-    gap: SPACING.sm,
   },
 });

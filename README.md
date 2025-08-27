@@ -90,7 +90,7 @@ Players are presented with a grid of letter tiles and must combine them to form 
 
 - **Multi-Difficulty System**
   - **Easy (2×2)**: 2-tile word combinations (59 words)
-  - **Medium (4×4)**: 3-tile word combinations (57 words)
+  - **Medium (3×3)**: 3-tile word combinations (57 words)
   - **Hard (6×6)**: 4-tile word combinations (59 words)
 
 - **Word Database**

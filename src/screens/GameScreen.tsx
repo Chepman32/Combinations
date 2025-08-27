@@ -25,13 +25,13 @@ export const GameScreen: React.FC = () => {
     freePlayPreset,
     setFreePlayDifficulty,
     startFreePlayGame,
-    pauseGame,
     endGame,
   } = useGame();
 
   const [selectedTiles, setSelectedTiles] = useState<string[]>([]);
   const [hintedTile, setHintedTile] = useState<string | undefined>();
   const [foundOpen, setFoundOpen] = useState<boolean>(false);
+  const [forceRefresh, setForceRefresh] = useState(0); // Force re-render when puzzle changes
 
   useEffect(() => {
     // Update selected tiles when game engine state changes
@@ -42,13 +42,20 @@ export const GameScreen: React.FC = () => {
     return () => clearInterval(interval);
   }, [gameEngine]);
 
+  useEffect(() => {
+    // Force re-render when puzzle ID changes (difficulty switch)
+    const currentPuzzleId = currentPuzzle?.id;
+    console.log('Puzzle changed:', currentPuzzleId, 'Grid:', currentPuzzle?.gridWidth, 'x', currentPuzzle?.gridHeight);
+    setForceRefresh(prev => prev + 1);
+  }, [currentPuzzle?.id, currentPuzzle?.gridWidth, currentPuzzle?.gridHeight, freePlayPreset]);
+
   const handleTilePress = (tileId: string) => {
     if (selectedTiles.includes(tileId)) {
       // Deselect tile
       gameEngine.deselectTile(tileId);
     } else {
       // Select tile
-      const success = gameEngine.selectTile(tileId);
+      gameEngine.selectTile(tileId);
       // No alert on failure; ignore
     }
   };
@@ -83,10 +90,7 @@ export const GameScreen: React.FC = () => {
     // This would trigger visual shuffle animation
   };
 
-  const handlePause = () => {
-    pauseGame();
-    // Navigate to pause overlay
-  };
+
 
   const handleExit = () => {
     endGame();
@@ -129,9 +133,7 @@ export const GameScreen: React.FC = () => {
           </Text>
         </View>
         
-        <TouchableOpacity onPress={handlePause} style={styles.topBarButton}>
-          <Text style={[styles.topBarButtonText, { color: colors.text }]}>≡</Text>
-        </TouchableOpacity>
+
       </View>
 
       {/* Star Meter + Difficulty Switcher (Free Play) */}
@@ -142,41 +144,67 @@ export const GameScreen: React.FC = () => {
            Puzzle ID: {currentPuzzle?.id} | Mode: {currentPuzzle?.id?.startsWith('freeplay_') ? 'Free Play' : 'Daily'}
          </Text>
          <Text style={[styles.debugText, { color: colors.textSecondary }]}>
-           Target Word: {currentPuzzle?.solutionWord}
+           Target Word: {currentPuzzle?.solutionWord} | Preset: {freePlayPreset}
+         </Text>
+         <Text style={[styles.debugText, { color: colors.textSecondary }]}>
+           Grid: {currentPuzzle?.gridWidth}×{currentPuzzle?.gridHeight} | Refresh: {forceRefresh}
          </Text>
         
-                 {/* Difficulty switcher - always show for now */}
-         <View style={[styles.difficultyRow, { marginBottom: SPACING.md }]}>
-           {(
-             [
-               { key: 'small', label: 'Easy (2×2)' },
-               { key: 'classic', label: 'Medium (4×4)' },
-               { key: 'big', label: 'Hard (6×6)' },
-             ] as const
-           ).map(opt => (
-             <TouchableOpacity
-               key={opt.key}
-               onPress={() => setFreePlayDifficulty(opt.key)}
-               style={[
-                 styles.diffButton,
-                 {
-                   backgroundColor:
-                     freePlayPreset === opt.key ? colors.primary : colors.surface2,
-                   borderColor: colors.border,
-                 },
-               ]}
-             >
-                                <Text
-                   style={[
-                     styles.diffButtonText,
-                     { color: freePlayPreset === opt.key ? colors.surface0 : colors.text },
-                   ]}
-                 >
-                 {opt.label}
-                 {freePlayPreset === opt.key ? ' ✓' : ''}
-               </Text>
-             </TouchableOpacity>
-           ))}
+                 {/* Difficulty switcher - simplified version */}
+         <View style={styles.difficultyRow}>
+           <TouchableOpacity
+             style={[
+               styles.diffButton,
+               {
+                 backgroundColor: freePlayPreset === 'small' ? colors.primary : colors.surface2,
+                 borderColor: colors.border,
+               },
+             ]}
+             onPress={() => {
+               console.log('Switching to Easy (2x2)');
+               setFreePlayDifficulty('small');
+             }}
+           >
+             <Text style={[styles.diffButtonText, { color: freePlayPreset === 'small' ? colors.surface0 : colors.text }]}>
+               Easy (2×2)
+             </Text>
+           </TouchableOpacity>
+           
+           <TouchableOpacity
+             style={[
+               styles.diffButton,
+               {
+                 backgroundColor: freePlayPreset === 'classic' ? colors.primary : colors.surface2,
+                 borderColor: colors.border,
+               },
+             ]}
+             onPress={() => {
+               console.log('Switching to Medium (3x3)');
+               setFreePlayDifficulty('classic');
+             }}
+           >
+             <Text style={[styles.diffButtonText, { color: freePlayPreset === 'classic' ? colors.surface0 : colors.text }]}>
+               Medium (3×3)
+             </Text>
+           </TouchableOpacity>
+           
+           <TouchableOpacity
+             style={[
+               styles.diffButton,
+               {
+                 backgroundColor: freePlayPreset === 'big' ? colors.primary : colors.surface2,
+                 borderColor: colors.border,
+               },
+             ]}
+             onPress={() => {
+               console.log('Switching to Hard (6x6)');
+               setFreePlayDifficulty('big');
+             }}
+           >
+             <Text style={[styles.diffButtonText, { color: freePlayPreset === 'big' ? colors.surface0 : colors.text }]}>
+               Hard (6×6)
+             </Text>
+           </TouchableOpacity>
          </View>
       </View>
 
@@ -320,12 +348,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: SPACING.sm,
     marginTop: SPACING.xs,
+    marginBottom: SPACING.md,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   diffButton: {
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.xs,
     borderRadius: BORDER_RADIUS.md,
     borderWidth: 1,
+    minHeight: 40,
+    minWidth: 80,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   diffButtonText: {
     ...TYPOGRAPHY.caption,
