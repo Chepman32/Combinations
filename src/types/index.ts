@@ -28,6 +28,9 @@ export type Puzzle = {
   ruleset: Ruleset;
   gridWidth: number;
   gridHeight: number;
+  // The canonical solution chosen when generating this puzzle
+  solutionWord: string;
+  solutionTiles: string[];
 };
 
 export type Attempt = {

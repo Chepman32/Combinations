@@ -4,9 +4,10 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Alert,
   SafeAreaView,
   StatusBar,
+  Modal,
+  Pressable,
 } from 'react-native';
 import { useTheme } from '../core/ThemeContext';
 import { useGame } from '../core/GameContext';
@@ -20,14 +21,17 @@ export const GameScreen: React.FC = () => {
     gameEngine,
     currentPuzzle,
     currentSession,
+    gameMode,
     freePlayPreset,
     setFreePlayDifficulty,
+    startFreePlayGame,
     pauseGame,
     endGame,
   } = useGame();
 
   const [selectedTiles, setSelectedTiles] = useState<string[]>([]);
   const [hintedTile, setHintedTile] = useState<string | undefined>();
+  const [foundOpen, setFoundOpen] = useState<boolean>(false);
 
   useEffect(() => {
     // Update selected tiles when game engine state changes
@@ -45,22 +49,12 @@ export const GameScreen: React.FC = () => {
     } else {
       // Select tile
       const success = gameEngine.selectTile(tileId);
-      if (!success) {
-        // Show error feedback
-        Alert.alert('Invalid Selection', 'This tile cannot be selected.');
-      }
+      // No alert on failure; ignore
     }
   };
 
-  const handleTileLongPress = (tileId: string) => {
-    // Show tile info popover
-    const tile = currentPuzzle?.tiles.find(t => t.id === tileId);
-    if (tile) {
-      Alert.alert(
-        `Tile: ${tile.text}`,
-        `Uses: ${tile.used}/${tile.maxUses}\nPosition: (${tile.x}, ${tile.y})`
-      );
-    }
+  const handleTileLongPress = (_tileId: string) => {
+    // no-op (suppress system alert)
   };
 
   const handleClear = () => {
@@ -69,17 +63,10 @@ export const GameScreen: React.FC = () => {
 
   const handleSubmit = () => {
     const result = gameEngine.submitWord();
-    
-    if (result.success && result.attempt) {
-      // Show success feedback
-      Alert.alert(
-        'Word Submitted!',
-        `"${result.attempt.word}" scored ${result.attempt.score} points!`,
-        [{ text: 'OK' }]
-      );
-    } else if (result.errors) {
-      // Show error feedback
-      Alert.alert('Invalid Word', result.errors.join('\n'));
+    if (result.success) {
+      if (gameMode === 'freeplay') {
+        startFreePlayGame(freePlayPreset);
+      }
     }
   };
 
@@ -87,10 +74,7 @@ export const GameScreen: React.FC = () => {
     const hint = gameEngine.getHint();
     if (hint) {
       setHintedTile(hint.tileId);
-      // Clear hint after 3 seconds
-      setTimeout(() => setHintedTile(undefined), 3000);
-    } else {
-      Alert.alert('No Hint Available', 'Try selecting some tiles first.');
+      setTimeout(() => setHintedTile(undefined), 1500);
     }
   };
 
@@ -105,14 +89,7 @@ export const GameScreen: React.FC = () => {
   };
 
   const handleExit = () => {
-    Alert.alert(
-      'Exit Game',
-      'Are you sure you want to exit? Your progress will be saved.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Exit', style: 'destructive', onPress: endGame },
-      ]
-    );
+    endGame();
   };
 
   if (!currentPuzzle || !currentSession) {
@@ -159,15 +136,13 @@ export const GameScreen: React.FC = () => {
 
       {/* Star Meter + Difficulty Switcher (Free Play) */}
       <View style={[styles.starMeter, { backgroundColor: colors.surface1 }]}>
-        <Text style={[styles.starText, { color: colors.text }]}>
-          {'★'.repeat(currentSession.stars)}{'☆'.repeat(5 - currentSession.stars)}
-        </Text>
+        {/* Stars removed per request */}
                  {/* Debug info */}
          <Text style={[styles.debugText, { color: colors.textSecondary }]}>
            Puzzle ID: {currentPuzzle?.id} | Mode: {currentPuzzle?.id?.startsWith('freeplay_') ? 'Free Play' : 'Daily'}
          </Text>
          <Text style={[styles.debugText, { color: colors.textSecondary }]}>
-           Target Word: {currentPuzzle?.tiles.slice(0, 2).map(t => t.text).join('')} (Easy) | {currentPuzzle?.tiles.slice(0, 3).map(t => t.text).join('')} (Medium) | {currentPuzzle?.tiles.slice(0, 4).map(t => t.text).join('')} (Hard)
+           Target Word: {currentPuzzle?.solutionWord}
          </Text>
         
                  {/* Difficulty switcher - always show for now */}
@@ -256,13 +231,38 @@ export const GameScreen: React.FC = () => {
 
         <TouchableOpacity
           style={[styles.toolButton, { backgroundColor: colors.success }]}
-          onPress={() => {/* Open found words */}}
+          onPress={() => setFoundOpen(true)}
         >
-          <Text style={[styles.toolButtonText, { color: colors.surface0 }]}>
+          <Text style={[styles.toolButtonText, { color: colors.surface0 }] }>
             📝 Found
           </Text>
         </TouchableOpacity>
       </View>
+
+      <Modal animationType="slide" transparent visible={foundOpen} onRequestClose={() => setFoundOpen(false)}>
+        <View style={styles.modalBackdrop}>
+          <View style={[styles.modalCard, { backgroundColor: colors.surface1 }]}>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>Found Words</Text>
+            <View style={{ maxHeight: 240 }}>
+              {currentSession.attempts.length === 0 ? (
+                <Text style={{ color: colors.textSecondary }}>No words yet. Keep playing!</Text>
+              ) : (
+                currentSession.attempts
+                  .slice()
+                  .reverse()
+                  .map(a => (
+                    <Text key={a.ts} style={{ color: colors.text, marginBottom: SPACING.xs }}>
+                      {a.word} · {a.score}
+                    </Text>
+                  ))
+              )}
+            </View>
+            <Pressable onPress={() => setFoundOpen(false)} style={[styles.modalButton, { backgroundColor: colors.primary }]}>
+              <Text style={{ color: colors.surface0, fontWeight: '700' }}>Close</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -368,5 +368,26 @@ const styles = StyleSheet.create({
   toolButtonText: {
     ...TYPOGRAPHY.body,
     fontWeight: '600',
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'flex-end',
+  },
+  modalCard: {
+    padding: SPACING.lg,
+    borderTopLeftRadius: BORDER_RADIUS.lg,
+    borderTopRightRadius: BORDER_RADIUS.lg,
+  },
+  modalTitle: {
+    ...TYPOGRAPHY.title,
+    marginBottom: SPACING.md,
+    fontWeight: '700',
+  },
+  modalButton: {
+    marginTop: SPACING.lg,
+    paddingVertical: SPACING.md,
+    alignItems: 'center',
+    borderRadius: BORDER_RADIUS.md,
   },
 });

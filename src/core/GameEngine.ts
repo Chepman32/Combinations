@@ -24,7 +24,8 @@ import {
   isValidWord, 
   isValidPrefix, 
   presetToDifficulty,
-  getWordData
+  getWordData,
+  WordData
 } from '../data';
 import { GAME_CONSTANTS } from '../constants';
 
@@ -54,11 +55,10 @@ export class GameEngine {
     this.initializeStats();
   }
 
-  // Generate tiles from word data based on difficulty
-  private generateTilesFromWordData(difficulty: 'easy' | 'medium' | 'hard', rngSeed: string, gridWidth: number, gridHeight: number): ComboTile[] {
+  // Generate tiles from provided word data and difficulty
+  private generateTilesFromWordData(difficulty: 'easy' | 'medium' | 'hard', rngSeed: string, gridWidth: number, gridHeight: number, wordData: WordData): ComboTile[] {
     // Convert string seed to number for deterministic generation
     const seedNumber = parseInt(rngSeed.slice(-8), 16) || 12345;
-    const wordData = getRandomWordForDifficulty(difficulty, seedNumber);
     const totalTiles = gridWidth * gridHeight;
     const tiles: ComboTile[] = [];
     
@@ -183,7 +183,8 @@ export class GameEngine {
     const seed = generateDailySeed();
     const gridSize = GAME_CONSTANTS.GRID_PRESETS.classic;
     const difficulty = presetToDifficulty('classic'); // Daily puzzles use classic difficulty
-    const tiles = this.generateTilesFromWordData(difficulty, seed.rngSeed, gridSize.width, gridSize.height);
+    const chosenWord = getRandomWordForDifficulty(difficulty, parseInt(seed.rngSeed.slice(-8), 16) || 12345);
+    const tiles = this.generateTilesFromWordData(difficulty, seed.rngSeed, gridSize.width, gridSize.height, chosenWord);
     const targetScore = calculateTargetScore(tiles);
 
     this.currentPuzzle = {
@@ -194,6 +195,8 @@ export class GameEngine {
       ruleset: this.defaultRuleset,
       gridWidth: gridSize.width,
       gridHeight: gridSize.height,
+      solutionWord: chosenWord.word.toUpperCase(),
+      solutionTiles: chosenWord.tiles.map(t => t.toUpperCase()),
     };
 
     return this.currentPuzzle;
@@ -204,7 +207,8 @@ export class GameEngine {
     const seed = generateRandomSeed();
     const gridSize = GAME_CONSTANTS.GRID_PRESETS[preset];
     const difficulty = presetToDifficulty(preset);
-    const tiles = this.generateTilesFromWordData(difficulty, seed.rngSeed, gridSize.width, gridSize.height);
+    const chosenWord = getRandomWordForDifficulty(difficulty, parseInt(seed.rngSeed.slice(-8), 16) || 12345);
+    const tiles = this.generateTilesFromWordData(difficulty, seed.rngSeed, gridSize.width, gridSize.height, chosenWord);
     const targetScore = calculateTargetScore(tiles);
 
     this.currentPuzzle = {
@@ -215,6 +219,8 @@ export class GameEngine {
       ruleset: this.defaultRuleset,
       gridWidth: gridSize.width,
       gridHeight: gridSize.height,
+      solutionWord: chosenWord.word.toUpperCase(),
+      solutionTiles: chosenWord.tiles.map(t => t.toUpperCase()),
     };
 
     return this.currentPuzzle;
@@ -420,8 +426,20 @@ export class GameEngine {
   public shuffleTiles(): void {
     if (!this.currentPuzzle) return;
 
-    // This would trigger a visual shuffle animation
-    // The actual tile data remains the same for determinism
+    // Shuffle array order deterministically-ish using time-based seed here
+    const tiles = [...this.currentPuzzle.tiles];
+    for (let i = tiles.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [tiles[i], tiles[j]] = [tiles[j], tiles[i]];
+    }
+    // Reassign positions to match new order
+    tiles.forEach((tile, index) => {
+      tile.x = index % this.currentPuzzle!.gridWidth;
+      tile.y = Math.floor(index / this.currentPuzzle!.gridWidth);
+    });
+
+    this.currentPuzzle.tiles = tiles;
+    this.clearSelection();
     this.gameState = 'idle';
   }
 

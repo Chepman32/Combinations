@@ -228,7 +228,7 @@ Players are presented with a grid of letter tiles and must combine them to form 
    npm run ios
    
    # Android
-   npm run android
+npm run android
    ```
 
 ### 📱 Platform-Specific Setup
