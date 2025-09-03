@@ -10,6 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../core/ThemeContext';
 import { useGame } from '../core/GameContext';
+import { useNavigation } from '../core/Navigation';
 import { FreePlayPreset } from '../types';
 import { SPACING, BORDER_RADIUS, SHADOWS, TYPOGRAPHY } from '../constants';
 import { seedToEmoji } from '../utils';
@@ -17,6 +18,7 @@ import { seedToEmoji } from '../utils';
 export const HomeScreen: React.FC = () => {
   const { colors, theme } = useTheme();
   const { startDailyGame, startFreePlayGame, currentSession, gameMode } = useGame();
+  const { navigateTo } = useNavigation();
 
   const handleDailyPress = () => {
     startDailyGame();
@@ -24,6 +26,14 @@ export const HomeScreen: React.FC = () => {
 
   const handleFreePlayPress = (preset: FreePlayPreset) => {
     startFreePlayGame(preset);
+  };
+
+  const handleStatsPress = () => {
+    navigateTo('stats');
+  };
+
+  const handleSettingsPress = () => {
+    navigateTo('settings');
   };
 
   const getCurrentDate = () => {
@@ -157,16 +167,16 @@ export const HomeScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.surface0 }]}>
-      <StatusBar barStyle={theme === 'light' ? 'dark-content' : 'light-content'} />
+      <StatusBar barStyle={(theme === 'light') ? 'dark-content' : 'light-content'} />
       
       {/* Header */}
       <View style={styles.header}>
         <Text style={[styles.appTitle, { color: colors.text }]}>Combinations</Text>
         <View style={styles.headerActions}>
-          <TouchableOpacity style={styles.headerButton}>
-            <Text style={[styles.headerButtonText, { color: colors.text }]}>🛍️</Text>
+          <TouchableOpacity style={styles.headerButton} onPress={handleStatsPress}>
+            <Text style={[styles.headerButtonText, { color: colors.text }]}>📊</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.headerButton}>
+          <TouchableOpacity style={styles.headerButton} onPress={handleSettingsPress}>
             <Text style={[styles.headerButtonText, { color: colors.text }]}>⚙️</Text>
           </TouchableOpacity>
         </View>

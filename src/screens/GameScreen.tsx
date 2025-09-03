@@ -66,6 +66,8 @@ export const GameScreen: React.FC = () => {
 
   const handleClear = () => {
     gameEngine.clearSelection();
+    setSelectedTiles([]);
+    setHintedTile(undefined);
   };
 
   const handleSubmit = () => {
@@ -99,7 +101,7 @@ export const GameScreen: React.FC = () => {
   if (!currentPuzzle || !currentSession) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.surface0 }]}>
-        <StatusBar barStyle={theme === 'light' ? 'dark-content' : 'light-content'} />
+        <StatusBar barStyle={(theme === 'light') ? 'dark-content' : 'light-content'} />
         <View style={styles.centerContainer}>
           <Text style={[styles.errorText, { color: colors.error }]}>
             No active game. Please start a new game.
@@ -116,8 +118,8 @@ export const GameScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.surface0 }]}>
-      <StatusBar barStyle={theme === 'light' ? 'dark-content' : 'light-content'} />
-      
+      <StatusBar barStyle={(theme === 'light') ? 'dark-content' : 'light-content'} />
+
       {/* Top Bar */}
       <View style={[styles.topBar, { backgroundColor: colors.surface1 }]}>
         <TouchableOpacity onPress={handleExit} style={styles.topBarButton}>

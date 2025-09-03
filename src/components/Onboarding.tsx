@@ -107,7 +107,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onSkip }) =>
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.surface0 }]}>
-      <StatusBar barStyle={theme === 'light' ? 'dark-content' : 'light-content'} />
+      <StatusBar barStyle={(theme === 'light') ? 'dark-content' : 'light-content'} />
       
       {/* Skip Button */}
       <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>

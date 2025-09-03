@@ -41,7 +41,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
 
   // Initialize theme based on system preference
   useEffect(() => {
-    if (settings.theme === 'light' || settings.theme === 'dark') {
+    if (settings.theme === 'light' || settings.theme === 'dark' || settings.theme === 'solar' || settings.theme === 'mono') {
       setThemeState(settings.theme);
     } else if (systemColorScheme) {
       setThemeState(systemColorScheme);
@@ -57,7 +57,10 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   };
 
   const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
+    const themes: ThemeId[] = ['light', 'dark', 'solar', 'mono'];
+    const currentIndex = themes.indexOf(theme);
+    const nextIndex = (currentIndex + 1) % themes.length;
+    const newTheme = themes[nextIndex];
     setTheme(newTheme);
   };
 

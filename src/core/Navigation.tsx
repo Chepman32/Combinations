@@ -1,8 +1,10 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { HomeScreen } from '../screens/HomeScreen';
 import { GameScreen } from '../screens/GameScreen';
+import { StatsScreen } from '../screens/StatsScreen';
+import { SettingsScreen } from '../screens/SettingsScreen';
 
-type Screen = 'home' | 'game';
+type Screen = 'home' | 'game' | 'stats' | 'settings';
 
 interface NavigationContextType {
   currentScreen: Screen;
@@ -60,6 +62,10 @@ const ScreenRenderer: React.FC<{ currentScreen: Screen }> = ({ currentScreen }) 
       return <HomeScreen />;
     case 'game':
       return <GameScreen />;
+    case 'stats':
+      return <StatsScreen />;
+    case 'settings':
+      return <SettingsScreen />;
     default:
       return <HomeScreen />;
   }
