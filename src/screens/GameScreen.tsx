@@ -14,19 +14,18 @@ import { useGame } from '../core/GameContext';
 import { TileGrid } from '../components/TileGrid';
 import { AssemblyBar } from '../components/AssemblyBar';
 import { SPACING, BORDER_RADIUS, SHADOWS, TYPOGRAPHY } from '../constants';
+import { getLocalizedStrings } from '../localization';
 
 export const GameScreen: React.FC = () => {
-  const { colors, theme } = useTheme();
+  const { colors, theme, language } = useTheme();
   const {
     gameEngine,
     currentPuzzle,
     currentSession,
-    gameMode,
-    freePlayPreset,
-    setFreePlayDifficulty,
-    startFreePlayGame,
     endGame,
   } = useGame();
+
+  const strings = getLocalizedStrings(language as any);
 
   const [selectedTiles, setSelectedTiles] = useState<string[]>([]);
   const [hintedTile, setHintedTile] = useState<string | undefined>();
@@ -43,11 +42,11 @@ export const GameScreen: React.FC = () => {
   }, [gameEngine]);
 
   useEffect(() => {
-    // Force re-render when puzzle ID changes (difficulty switch)
+    // Force re-render when puzzle ID changes
     const currentPuzzleId = currentPuzzle?.id;
     console.log('Puzzle changed:', currentPuzzleId, 'Grid:', currentPuzzle?.gridWidth, 'x', currentPuzzle?.gridHeight);
     setForceRefresh(prev => prev + 1);
-  }, [currentPuzzle?.id, currentPuzzle?.gridWidth, currentPuzzle?.gridHeight, freePlayPreset]);
+  }, [currentPuzzle?.id, currentPuzzle?.gridWidth, currentPuzzle?.gridHeight]);
 
   const handleTilePress = (tileId: string) => {
     if (selectedTiles.includes(tileId)) {
@@ -73,9 +72,7 @@ export const GameScreen: React.FC = () => {
   const handleSubmit = () => {
     const result = gameEngine.submitWord();
     if (result.success) {
-      if (gameMode === 'freeplay') {
-        startFreePlayGame(freePlayPreset);
-      }
+      // Game completed successfully
     }
   };
 
@@ -104,7 +101,7 @@ export const GameScreen: React.FC = () => {
         <StatusBar barStyle={(theme === 'light') ? 'dark-content' : 'light-content'} />
         <View style={styles.centerContainer}>
           <Text style={[styles.errorText, { color: colors.error }]}>
-            No active game. Please start a new game.
+            {strings.noActiveGame}
           </Text>
         </View>
       </SafeAreaView>
@@ -138,76 +135,20 @@ export const GameScreen: React.FC = () => {
 
       </View>
 
-      {/* Star Meter + Difficulty Switcher (Free Play) */}
+      {/* Star Meter */}
       <View style={[styles.starMeter, { backgroundColor: colors.surface1 }]}>
         {/* Stars removed per request */}
                  {/* Debug info */}
          <Text style={[styles.debugText, { color: colors.textSecondary }]}>
-           Puzzle ID: {currentPuzzle?.id} | Mode: {currentPuzzle?.id?.startsWith('freeplay_') ? 'Free Play' : 'Daily'}
+           {strings.puzzleId}: {currentPuzzle?.id} | {strings.mode}: {strings.daily}
          </Text>
          <Text style={[styles.debugText, { color: colors.textSecondary }]}>
-           Target Word: {currentPuzzle?.solutionWord} | Preset: {freePlayPreset}
+           {strings.targetScore}: {currentPuzzle?.solutionWord}
          </Text>
          <Text style={[styles.debugText, { color: colors.textSecondary }]}>
-           Grid: {currentPuzzle?.gridWidth}×{currentPuzzle?.gridHeight} | Refresh: {forceRefresh}
+           {strings.grid}: {currentPuzzle?.gridWidth}×{currentPuzzle?.gridHeight} | Refresh: {forceRefresh}
          </Text>
-        
-                 {/* Difficulty switcher - simplified version */}
-         <View style={styles.difficultyRow}>
-           <TouchableOpacity
-             style={[
-               styles.diffButton,
-               {
-                 backgroundColor: freePlayPreset === 'small' ? colors.primary : colors.surface2,
-                 borderColor: colors.border,
-               },
-             ]}
-             onPress={() => {
-               console.log('Switching to Easy (2x2)');
-               setFreePlayDifficulty('small');
-             }}
-           >
-             <Text style={[styles.diffButtonText, { color: freePlayPreset === 'small' ? colors.surface0 : colors.text }]}>
-               Easy (2×2)
-             </Text>
-           </TouchableOpacity>
-           
-           <TouchableOpacity
-             style={[
-               styles.diffButton,
-               {
-                 backgroundColor: freePlayPreset === 'classic' ? colors.primary : colors.surface2,
-                 borderColor: colors.border,
-               },
-             ]}
-             onPress={() => {
-               console.log('Switching to Medium (3x3)');
-               setFreePlayDifficulty('classic');
-             }}
-           >
-             <Text style={[styles.diffButtonText, { color: freePlayPreset === 'classic' ? colors.surface0 : colors.text }]}>
-               Medium (3×3)
-             </Text>
-           </TouchableOpacity>
-           
-           <TouchableOpacity
-             style={[
-               styles.diffButton,
-               {
-                 backgroundColor: freePlayPreset === 'big' ? colors.primary : colors.surface2,
-                 borderColor: colors.border,
-               },
-             ]}
-             onPress={() => {
-               console.log('Switching to Hard (6x6)');
-               setFreePlayDifficulty('big');
-             }}
-           >
-             <Text style={[styles.diffButtonText, { color: freePlayPreset === 'big' ? colors.surface0 : colors.text }]}>
-               Hard (6×6)
-             </Text>
-           </TouchableOpacity>
-         </View>
+
       </View>
 
       {/* Game Area */}
@@ -246,7 +187,7 @@ export const GameScreen: React.FC = () => {
           onPress={handleHint}
         >
           <Text style={[styles.toolButtonText, { color: colors.surface0 }]}>
-            💡 Hint
+            💡 {strings.hint}
           </Text>
         </TouchableOpacity>
 
@@ -255,7 +196,7 @@ export const GameScreen: React.FC = () => {
           onPress={handleShuffle}
         >
           <Text style={[styles.toolButtonText, { color: colors.surface0 }]}>
-            🔀 Shuffle
+            🔀 {strings.shuffle}
           </Text>
         </TouchableOpacity>
 
@@ -264,7 +205,7 @@ export const GameScreen: React.FC = () => {
           onPress={() => setFoundOpen(true)}
         >
           <Text style={[styles.toolButtonText, { color: colors.surface0 }] }>
-            📝 Found
+            📝 {strings.wordsFound}
           </Text>
         </TouchableOpacity>
       </View>
@@ -272,10 +213,10 @@ export const GameScreen: React.FC = () => {
       <Modal animationType="slide" transparent visible={foundOpen} onRequestClose={() => setFoundOpen(false)}>
         <View style={styles.modalBackdrop}>
           <View style={[styles.modalCard, { backgroundColor: colors.surface1 }]}>
-            <Text style={[styles.modalTitle, { color: colors.text }]}>Found Words</Text>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>{strings.wordsFound}</Text>
             <View style={{ maxHeight: 240 }}>
               {currentSession.attempts.length === 0 ? (
-                <Text style={{ color: colors.textSecondary }}>No words yet. Keep playing!</Text>
+                <Text style={{ color: colors.textSecondary }}>{strings.noWordsYet}</Text>
               ) : (
                 currentSession.attempts
                   .slice()
@@ -288,7 +229,7 @@ export const GameScreen: React.FC = () => {
               )}
             </View>
             <Pressable onPress={() => setFoundOpen(false)} style={[styles.modalButton, { backgroundColor: colors.primary }]}>
-              <Text style={{ color: colors.surface0, fontWeight: '700' }}>Close</Text>
+              <Text style={{ color: colors.surface0, fontWeight: '700' }}>{strings.close}</Text>
             </Pressable>
           </View>
         </View>
@@ -348,28 +289,7 @@ const styles = StyleSheet.create({
     zIndex: 2,
     ...SHADOWS.sm,
   },
-  difficultyRow: {
-    flexDirection: 'row',
-    gap: SPACING.sm,
-    marginTop: SPACING.xs,
-    marginBottom: SPACING.md,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  diffButton: {
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.xs,
-    borderRadius: BORDER_RADIUS.md,
-    borderWidth: 1,
-    minHeight: 40,
-    minWidth: 80,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  diffButtonText: {
-    ...TYPOGRAPHY.caption,
-    fontWeight: '600',
-  },
+
   debugText: {
     ...TYPOGRAPHY.caption,
     marginTop: SPACING.xs,

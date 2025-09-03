@@ -58,10 +58,13 @@ export type Stats = {
 
 export type ThemeId = 'light' | 'dark' | 'solar' | 'mono';
 
+export type LanguageCode = 'en' | 'es' | 'fr' | 'de' | 'ru';
+
 export type Settings = {
   theme: ThemeId;
   haptics: boolean;
   sounds: boolean;
+  language: LanguageCode;
   leftHanded: boolean;
   reduceMotion: boolean;
 };
@@ -72,9 +75,7 @@ export type PurchaseState = {
   lastVerifiedAt?: number;
 };
 
-export type GameMode = 'daily' | 'freeplay';
-
-export type FreePlayPreset = 'small' | 'classic' | 'big';
+export type GameMode = 'daily';
 
 export type HintType = 'start' | 'continuation' | 'word';
 

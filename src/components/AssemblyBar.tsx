@@ -9,12 +9,13 @@ import {
 import { useTheme } from '../core/ThemeContext';
 import { ComboTile as ComboTileType } from '../types';
 import { SPACING, BORDER_RADIUS, SHADOWS, TYPOGRAPHY } from '../constants';
+import { getLocalizedStrings } from '../localization';
 
 interface AssemblyBarProps {
   selectedTiles: ComboTileType[];
-  currentWord: string;
-  isValidPrefix: boolean;
-  isValidWord: boolean;
+  _currentWord: string;
+  _isValidPrefix: boolean;
+  _isValidWord: boolean;
   onTilePress: (tileId: string) => void;
   onClear: () => void;
   onSubmit: () => void;
@@ -23,22 +24,18 @@ interface AssemblyBarProps {
 
 export const AssemblyBar: React.FC<AssemblyBarProps> = ({
   selectedTiles,
-  currentWord,
-  isValidPrefix,
-  isValidWord,
+  _currentWord,
+  _isValidPrefix,
+  _isValidWord,
   onTilePress,
   onClear,
   onSubmit,
   canSubmit,
 }) => {
-  const { colors } = useTheme();
+  const { colors, language } = useTheme();
+  const strings = getLocalizedStrings(language as any);
 
-  const getWordColor = () => {
-    if (currentWord.length === 0) return colors.textSecondary;
-    if (isValidWord) return colors.success;
-    if (isValidPrefix) return colors.primary;
-    return colors.error;
-  };
+
 
   const renderSelectedTile = (tile: ComboTileType, index: number) => (
     <TouchableOpacity
@@ -83,7 +80,7 @@ export const AssemblyBar: React.FC<AssemblyBarProps> = ({
           disabled={selectedTiles.length === 0}
         >
           <Text style={[styles.actionButtonText, { color: colors.textSecondary }]}>
-            Clear
+            {strings.clear}
           </Text>
         </TouchableOpacity>
 
@@ -106,7 +103,7 @@ export const AssemblyBar: React.FC<AssemblyBarProps> = ({
               },
             ]}
           >
-            Submit
+            {strings.submit}
           </Text>
         </TouchableOpacity>
       </View>

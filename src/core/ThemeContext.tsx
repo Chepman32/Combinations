@@ -7,15 +7,18 @@ interface ThemeContextType {
   theme: ThemeId;
   colors: typeof COLORS.light | typeof COLORS.dark | typeof COLORS.solar | typeof COLORS.mono;
   settings: Settings;
+  language: string;
   setTheme: (theme: ThemeId) => void;
   updateSettings: (newSettings: Partial<Settings>) => void;
   toggleTheme: () => void;
+  setLanguage: (language: string) => void;
 }
 
 const defaultSettings: Settings = {
   theme: 'light',
   haptics: true,
   sounds: true,
+  language: 'en',
   leftHanded: false,
   reduceMotion: false,
 };
@@ -38,6 +41,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const systemColorScheme = useColorScheme();
   const [settings, setSettings] = useState<Settings>(defaultSettings);
   const [theme, setThemeState] = useState<ThemeId>('light');
+  const [language, setLanguageState] = useState<string>('en');
 
   // Initialize theme based on system preference
   useEffect(() => {
@@ -47,6 +51,11 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
       setThemeState(systemColorScheme);
     }
   }, [settings.theme, systemColorScheme]);
+
+  // Initialize language based on settings
+  useEffect(() => {
+    setLanguageState(settings.language);
+  }, [settings.language]);
 
   // Get current colors based on theme
   const colors = COLORS[theme] || COLORS.light;
@@ -68,13 +77,20 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     setSettings(prev => ({ ...prev, ...newSettings }));
   };
 
+  const setLanguage = (newLanguage: string) => {
+    setLanguageState(newLanguage);
+    updateSettings({ language: newLanguage as any });
+  };
+
   const value: ThemeContextType = {
     theme,
     colors,
     settings,
+    language,
     setTheme,
     updateSettings,
     toggleTheme,
+    setLanguage,
   };
 
   return (

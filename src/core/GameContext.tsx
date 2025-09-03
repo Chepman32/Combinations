@@ -1,18 +1,15 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { GameEngine } from './GameEngine';
-import { Puzzle, Session, GameMode, FreePlayPreset } from '../types';
+import { Puzzle, Session } from '../types';
 import { useNavigation } from './Navigation';
+import { useTheme } from './ThemeContext';
 
 interface GameContextType {
   gameEngine: GameEngine;
   currentPuzzle: Puzzle | null;
   currentSession: Session | null;
-  gameMode: GameMode;
-  freePlayPreset: FreePlayPreset;
   isGameActive: boolean;
   startDailyGame: () => void;
-  startFreePlayGame: (preset: FreePlayPreset) => void;
-  setFreePlayDifficulty: (preset: FreePlayPreset) => void;
   pauseGame: () => void;
   resumeGame: () => void;
   resetGame: () => void;
@@ -34,47 +31,25 @@ interface GameProviderProps {
 }
 
 export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
-  const [gameEngine] = useState(() => new GameEngine());
-  const [gameMode, setGameMode] = useState<GameMode>('daily');
-  const [freePlayPreset, setFreePlayPreset] = useState<FreePlayPreset>('classic');
+  const { language, setLanguage } = useTheme();
+  const [gameEngine] = useState(() => new GameEngine(language));
   const [isGameActive, setIsGameActive] = useState(false);
   const [currentPuzzle, setCurrentPuzzle] = useState<Puzzle | null>(null);
   const [currentSession, setCurrentSession] = useState<Session | null>(null);
   const { navigateTo } = useNavigation();
+
+  // Update game engine language when theme language changes
+  useEffect(() => {
+    gameEngine.setLanguage(language);
+  }, [gameEngine, language]);
 
   const startDailyGame = () => {
     const puzzle = gameEngine.generateDailyPuzzle();
     const session = gameEngine.startSession(puzzle.id);
     setCurrentPuzzle(puzzle);
     setCurrentSession(session);
-    setGameMode('daily');
     setIsGameActive(true);
     navigateTo('game');
-  };
-
-  const startFreePlayGame = (preset: FreePlayPreset) => {
-    const puzzle = gameEngine.generateFreePlayPuzzle(preset);
-    const session = gameEngine.startSession(puzzle.id);
-    setCurrentPuzzle(puzzle);
-    setCurrentSession(session);
-    setGameMode('freeplay');
-    setFreePlayPreset(preset);
-    setIsGameActive(true);
-    navigateTo('game');
-  };
-
-  // Regenerate a free play puzzle with a new difficulty (grid size)
-  const setFreePlayDifficulty = (preset: FreePlayPreset) => {
-    console.log('setFreePlayDifficulty called with:', preset);
-    const puzzle = gameEngine.generateFreePlayPuzzle(preset);
-    const session = gameEngine.startSession(puzzle.id);
-    setCurrentPuzzle(puzzle);
-    setCurrentSession(session);
-    setGameMode('freeplay');
-    setFreePlayPreset(preset);
-    setIsGameActive(true);
-    console.log('New puzzle generated:', puzzle.id, 'Grid:', puzzle.gridWidth, 'x', puzzle.gridHeight);
-    // Don't navigate since we're already on the game screen
   };
 
   const pauseGame = () => {
@@ -108,12 +83,8 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
     gameEngine,
     currentPuzzle,
     currentSession,
-    gameMode,
-    freePlayPreset,
     isGameActive,
     startDailyGame,
-    startFreePlayGame,
-    setFreePlayDifficulty,
     pauseGame,
     resumeGame,
     resetGame,

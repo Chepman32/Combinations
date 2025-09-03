@@ -18,16 +18,19 @@ import {
   calculateScore,
   calculateStars,
 } from '../utils';
-import { 
-  WORD_DATABASE, 
-  getRandomWordForDifficulty, 
-  isValidWord, 
-  isValidPrefix, 
+import {
+  WORD_DATABASE,
+  getRandomWordForDifficulty,
+  isValidWord,
+  isValidPrefix,
   presetToDifficulty,
   getWordData,
+  getWordDatabaseForLanguage,
   WordData
 } from '../data';
+import { LanguageCode } from '../types';
 import { GAME_CONSTANTS } from '../constants';
+
 
 export class GameEngine {
   private currentPuzzle: Puzzle | null = null;
@@ -35,6 +38,7 @@ export class GameEngine {
   private gameState: GameState = 'idle';
   private selectedTiles: string[] = [];
   private currentWord: string = '';
+  private language: LanguageCode = 'en';
   private stats: Stats = {
     daysPlayed: 0,
     streak: 0,
@@ -51,8 +55,14 @@ export class GameEngine {
     allowProperNouns: false,
   };
 
-  constructor() {
+  constructor(language: LanguageCode = 'en') {
+    this.language = language;
     this.initializeStats();
+  }
+
+  // Set the language for word generation and validation
+  public setLanguage(language: LanguageCode): void {
+    this.language = language;
   }
 
   // Generate tiles from provided word data and difficulty
@@ -183,7 +193,7 @@ export class GameEngine {
     const seed = generateDailySeed();
     const gridSize = GAME_CONSTANTS.GRID_PRESETS.classic;
     const difficulty = presetToDifficulty('classic'); // Daily puzzles use classic difficulty
-    const chosenWord = getRandomWordForDifficulty(difficulty, parseInt(seed.rngSeed.slice(-8), 16) || 12345);
+    const chosenWord = getRandomWordForDifficulty(difficulty, parseInt(seed.rngSeed.slice(-8), 16) || 12345, this.language);
     const tiles = this.generateTilesFromWordData(difficulty, seed.rngSeed, gridSize.width, gridSize.height, chosenWord);
     const targetScore = calculateTargetScore(tiles);
 
@@ -202,29 +212,7 @@ export class GameEngine {
     return this.currentPuzzle;
   }
 
-  // Generate free play puzzle
-  public generateFreePlayPuzzle(preset: FreePlayPreset): Puzzle {
-    const seed = generateRandomSeed();
-    const gridSize = GAME_CONSTANTS.GRID_PRESETS[preset];
-    const difficulty = presetToDifficulty(preset);
-    const chosenWord = getRandomWordForDifficulty(difficulty, parseInt(seed.rngSeed.slice(-8), 16) || 12345);
-    const tiles = this.generateTilesFromWordData(difficulty, seed.rngSeed, gridSize.width, gridSize.height, chosenWord);
-    const targetScore = calculateTargetScore(tiles);
 
-    this.currentPuzzle = {
-      id: `freeplay_${Date.now()}`,
-      seed,
-      tiles,
-      targetScore,
-      ruleset: this.defaultRuleset,
-      gridWidth: gridSize.width,
-      gridHeight: gridSize.height,
-      solutionWord: chosenWord.word.toUpperCase(),
-      solutionTiles: chosenWord.tiles.map(t => t.toUpperCase()),
-    };
-
-    return this.currentPuzzle;
-  }
 
   // Start new session
   public startSession(puzzleId: string): Session {
@@ -296,12 +284,12 @@ export class GameEngine {
 
   // Check if current word is a valid prefix
   public isCurrentWordPrefix(): boolean {
-    return isValidPrefix(this.currentWord);
+    return isValidPrefix(this.currentWord, this.language);
   }
 
   // Check if current word is a valid word
   public isCurrentWordValid(): boolean {
-    return isValidWord(this.currentWord);
+    return isValidWord(this.currentWord, this.language);
   }
 
   // Submit current word
@@ -455,7 +443,8 @@ export class GameEngine {
       // Find a tile that starts a valid word from our database
       const validStartTile = availableTiles.find(tile => {
         // Check if this tile could start any valid words
-        return Object.values(WORD_DATABASE).flat().some(wordData => {
+        const languageDatabase = getWordDatabaseForLanguage(this.language);
+        return Object.values(languageDatabase).flat().some(wordData => {
           return wordData.tiles[0].toUpperCase() === tile.text;
         });
       });
@@ -475,10 +464,11 @@ export class GameEngine {
       });
       
       // Look for words that match our current tile sequence
-      const possibleWords = Object.values(WORD_DATABASE).flat().filter(wordData => {
+      const languageDatabase = getWordDatabaseForLanguage(this.language);
+      const possibleWords = Object.values(languageDatabase).flat().filter(wordData => {
         // Check if the current tiles match the beginning of this word
         if (wordData.tiles.length <= currentTileTexts.length) return false;
-        
+
         return currentTileTexts.every((tileText, index) => {
           return wordData.tiles[index].toUpperCase() === tileText;
         });

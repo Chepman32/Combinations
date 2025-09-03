@@ -13,17 +13,18 @@ import { useTheme } from '../core/ThemeContext';
 import { useNavigation } from '../core/Navigation';
 import { SPACING, BORDER_RADIUS, SHADOWS, TYPOGRAPHY } from '../constants';
 import { ThemeId } from '../types';
+import { getLocalizedStrings } from '../localization';
 
 export const SettingsScreen: React.FC = () => {
-  const { colors, theme, settings, setTheme, updateSettings } = useTheme();
+  const { colors, theme, settings, setTheme, updateSettings, language, setLanguage } = useTheme();
   const { goBack } = useNavigation();
-  const [selectedLanguage, setSelectedLanguage] = useState('en');
+  const strings = getLocalizedStrings(language);
 
   const themeOptions: { id: ThemeId; label: string; description: string; icon: string }[] = [
-    { id: 'light', label: 'Light', description: 'Clean and bright', icon: '☀️' },
-    { id: 'dark', label: 'Dark', description: 'Easy on the eyes', icon: '🌙' },
-    { id: 'solar', label: 'Solar', description: 'Warm and vibrant', icon: '🌓' },
-    { id: 'mono', label: 'Mono', description: 'Minimalist grayscale', icon: '⚫' },
+    { id: 'light', label: strings.lightTheme, description: strings.lightDesc, icon: '☀️' },
+    { id: 'dark', label: strings.darkTheme, description: strings.darkDesc, icon: '🌙' },
+    { id: 'solar', label: strings.solarTheme, description: strings.solarDesc, icon: '🌓' },
+    { id: 'mono', label: strings.monoTheme, description: strings.monoDesc, icon: '⚫' },
   ];
 
   const languageOptions = [
@@ -31,6 +32,7 @@ export const SettingsScreen: React.FC = () => {
     { code: 'es', label: 'Español', flag: '🇪🇸' },
     { code: 'fr', label: 'Français', flag: '🇫🇷' },
     { code: 'de', label: 'Deutsch', flag: '🇩🇪' },
+    { code: 'ru', label: 'Русский', flag: '🇷🇺' },
   ];
 
   const handleThemeChange = (newTheme: ThemeId) => {
@@ -46,7 +48,7 @@ export const SettingsScreen: React.FC = () => {
   };
 
   const handleLanguageChange = (languageCode: string) => {
-    setSelectedLanguage(languageCode);
+    setLanguage(languageCode);
   };
 
   const renderSettingSection = (
@@ -97,14 +99,14 @@ export const SettingsScreen: React.FC = () => {
         <TouchableOpacity onPress={goBack} style={styles.backButton}>
           <Text style={[styles.backButtonText, { color: colors.text }]}>←</Text>
         </TouchableOpacity>
-        <Text style={[styles.title, { color: colors.text }]}>Settings</Text>
+        <Text style={[styles.title, { color: colors.text }]}>{strings.settings}</Text>
         <View style={styles.headerSpacer} />
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Theme Section */}
         {renderSettingSection(
-          'Appearance',
+          strings.appearance,
           <View style={styles.themeGrid}>
             {themeOptions.map((themeOption) => (
               <TouchableOpacity
@@ -142,18 +144,18 @@ export const SettingsScreen: React.FC = () => {
 
         {/* Audio Section */}
         {renderSettingSection(
-          'Audio & Feedback',
+          strings.audioFeedback,
           <>
             {renderToggleRow(
-              'Sound Effects',
-              'Play sounds for interactions',
+              strings.soundEffects,
+              strings.playSounds,
               settings.sounds,
               handleToggleSounds,
               '🔊'
             )}
             {renderToggleRow(
-              'Haptic Feedback',
-              'Vibrate on interactions',
+              strings.hapticFeedback,
+              strings.vibrateInteractions,
               settings.haptics,
               handleToggleHaptics,
               '📳'
@@ -163,7 +165,7 @@ export const SettingsScreen: React.FC = () => {
 
         {/* Language Section */}
         {renderSettingSection(
-          'Language',
+          strings.language,
           <View style={styles.languageContainer}>
             {languageOptions.map((language) => (
               <TouchableOpacity
@@ -171,7 +173,7 @@ export const SettingsScreen: React.FC = () => {
                 style={[
                   styles.languageOption,
                   {
-                    backgroundColor: selectedLanguage === language.code ? colors.primary : colors.surface2,
+                    backgroundColor: language === language.code ? colors.primary : colors.surface2,
                     borderColor: colors.border,
                   },
                 ]}
@@ -181,7 +183,7 @@ export const SettingsScreen: React.FC = () => {
                 <Text
                   style={[
                     styles.languageLabel,
-                    { color: selectedLanguage === language.code ? colors.surface0 : colors.text }
+                    { color: language === language.code ? colors.surface0 : colors.text }
                   ]}
                 >
                   {language.label}
@@ -193,18 +195,18 @@ export const SettingsScreen: React.FC = () => {
 
         {/* About Section */}
         {renderSettingSection(
-          'About',
+          strings.about,
           <View style={styles.aboutContainer}>
             <View style={styles.aboutItem}>
-              <Text style={[styles.aboutLabel, { color: colors.textSecondary }]}>Version</Text>
+              <Text style={[styles.aboutLabel, { color: colors.textSecondary }]}>{strings.version}</Text>
               <Text style={[styles.aboutValue, { color: colors.text }]}>1.0.0</Text>
             </View>
             <View style={styles.aboutItem}>
-              <Text style={[styles.aboutLabel, { color: colors.textSecondary }]}>Build</Text>
+              <Text style={[styles.aboutLabel, { color: colors.textSecondary }]}>{strings.build}</Text>
               <Text style={[styles.aboutValue, { color: colors.text }]}>2024.01.01</Text>
             </View>
             <View style={styles.aboutItem}>
-              <Text style={[styles.aboutLabel, { color: colors.textSecondary }]}>Developer</Text>
+              <Text style={[styles.aboutLabel, { color: colors.textSecondary }]}>{strings.developer}</Text>
               <Text style={[styles.aboutValue, { color: colors.text }]}>Combinations Team</Text>
             </View>
           </View>
@@ -226,7 +228,7 @@ export const SettingsScreen: React.FC = () => {
             }}
           >
             <Text style={[styles.resetButtonText, { color: colors.error }]}>
-              Reset All Settings
+              {strings.resetAllSettings}
             </Text>
           </TouchableOpacity>
         </View>

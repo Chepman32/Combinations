@@ -4,6 +4,12 @@
  * Note: Word count reduced by 50% for each difficulty level to improve performance
  */
 
+import { LanguageCode } from './types';
+import { SPANISH_WORD_DATABASE } from './data/spanish';
+import { FRENCH_WORD_DATABASE } from './data/french';
+import { GERMAN_WORD_DATABASE } from './data/german';
+import { RUSSIAN_WORD_DATABASE } from './data/russian';
+
 export interface WordData {
   word: string;
   tiles: string[];
@@ -76,19 +82,30 @@ export const WORD_DATABASE: WordDatabase = {
   ]
 };
 
+// Multi-language database support
+const LANGUAGE_DATABASES: Record<LanguageCode, WordDatabase> = {
+  en: WORD_DATABASE,
+  es: SPANISH_WORD_DATABASE,
+  fr: FRENCH_WORD_DATABASE,
+  de: GERMAN_WORD_DATABASE,
+  ru: RUSSIAN_WORD_DATABASE,
+};
+
 // Helper functions for data processing
-export function getWordsForDifficulty(difficulty: keyof WordDatabase): WordData[] {
-  return WORD_DATABASE[difficulty];
+export function getWordsForDifficulty(difficulty: keyof WordDatabase, language: LanguageCode = 'en'): WordData[] {
+  const database = LANGUAGE_DATABASES[language] || WORD_DATABASE;
+  return database[difficulty];
 }
 
-export function getRandomWord(difficulty: keyof WordDatabase): WordData {
-  const words = getWordsForDifficulty(difficulty);
+export function getRandomWord(difficulty: keyof WordDatabase, language: LanguageCode = 'en'): WordData {
+  const words = getWordsForDifficulty(difficulty, language);
   const randomIndex = Math.floor(Math.random() * words.length);
   return words[randomIndex];
 }
 
-export function getTotalWordCount(): number {
-  return Object.values(WORD_DATABASE).reduce((total, words) => total + words.length, 0);
+export function getTotalWordCount(language: LanguageCode = 'en'): number {
+  const database = LANGUAGE_DATABASES[language] || WORD_DATABASE;
+  return Object.values(database).reduce((total, words) => total + words.length, 0);
 }
 
 // Convert preset names to difficulty levels
@@ -106,27 +123,35 @@ export function presetToDifficulty(preset: string): keyof WordDatabase {
 }
 
 // Get random word for a specific difficulty with seeded randomization
-export function getRandomWordForDifficulty(difficulty: keyof WordDatabase, seed: number): WordData {
-  const words = getWordsForDifficulty(difficulty);
+export function getRandomWordForDifficulty(difficulty: keyof WordDatabase, seed: number, language: LanguageCode = 'en'): WordData {
+  const words = getWordsForDifficulty(difficulty, language);
   const randomIndex = seed % words.length;
   return words[randomIndex];
 }
 
 // Get word data by word string (used for validation)
-export function getWordData(word: string): WordData | null {
-  const allWords = Object.values(WORD_DATABASE).flat();
+export function getWordData(word: string, language: LanguageCode = 'en'): WordData | null {
+  const database = LANGUAGE_DATABASES[language] || WORD_DATABASE;
+  const allWords = Object.values(database).flat();
   return allWords.find(w => w.word.toLowerCase() === word.toLowerCase()) || null;
 }
 
 // Simple word validation - checks if word exists in our database
-export function isValidWord(word: string): boolean {
-  const allWords = Object.values(WORD_DATABASE).flat();
+export function isValidWord(word: string, language: LanguageCode = 'en'): boolean {
+  const database = LANGUAGE_DATABASES[language] || WORD_DATABASE;
+  const allWords = Object.values(database).flat();
   return allWords.some(w => w.word.toLowerCase() === word.toLowerCase());
 }
 
 // Simple prefix validation - checks if the current string could be the start of a valid word
-export function isValidPrefix(prefix: string): boolean {
+export function isValidPrefix(prefix: string, language: LanguageCode = 'en'): boolean {
   if (prefix.length === 0) return true;
-  const allWords = Object.values(WORD_DATABASE).flat();
+  const database = LANGUAGE_DATABASES[language] || WORD_DATABASE;
+  const allWords = Object.values(database).flat();
   return allWords.some(w => w.word.toLowerCase().startsWith(prefix.toLowerCase()));
+}
+
+// Get the word database for a specific language
+export function getWordDatabaseForLanguage(language: LanguageCode): WordDatabase {
+  return LANGUAGE_DATABASES[language] || WORD_DATABASE;
 }
